@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Starry Sky</title>
+  </head>
+  <body>
+    <canvas id="scene"></canvas>
+
+    <div id="panel">
+      <div class="panel-head">
+        <span class="title">STARRY SKY</span>
+        <div class="meter" aria-hidden="true">
+          <span class="bar" id="m-bass"></span>
+          <span class="bar" id="m-mid"></span>
+          <span class="bar" id="m-treble"></span>
+          <span id="beat-dot"></span>
+        </div>
+      </div>
+
+      <div class="buttons">
+        <button data-source="tab">分頁音訊</button>
+        <button data-source="system">系統音訊</button>
+        <button data-source="mic">麥克風</button>
+        <button data-source="file">音檔</button>
+        <button id="stop-btn" class="ghost">停止</button>
+      </div>
+
+      <p id="status">選擇一個音源開始。分享分頁或螢幕時，記得勾選「分享音訊」。</p>
+      <p class="hint">H 隱藏介面 · F 全螢幕 · 可直接把音檔拖進畫面</p>
+    </div>
+
+    <input type="file" id="file-input" accept="audio/*" hidden />
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
