@@ -4,13 +4,18 @@
 它讀取瀏覽器分頁、系統背景音、麥克風或本機音檔的聲音，即時分析頻譜與節拍，讓星空、星雲、粒子和星系跟著音樂律動(目前預設使用極光模擬音波)。
 然後也假掰的寫了一些對話輪播。
 
-![畫面截圖](public/Pics/螢幕擷取畫面 2026-10-23 135526.png)
+🌙 Git page已部署：**https://zingwen.github.io/starry_sky/**
+
+![畫面截圖](<public/Pics/螢幕擷取畫面 2026-10-23 135526.png>)
+
 ---
 
 ## 功能規劃
 
+
+
 ### 音源輸入
-![介面截圖](public/Pics/螢幕擷取畫面 2026-10-23 135548.png)
+![介面截圖](<public/Pics/螢幕擷取畫面 2026-10-23 135548.png>)
 
 | 音源 | 取得方式 | 備註 |
 |---|---|---|
@@ -20,6 +25,39 @@
 | 本機音檔 | `<input type="file">` + `<audio>` | 不需授權，適合開發測試 |
 
 > 瀏覽器基於安全限制，每次使用分頁或系統音訊都必須由使用者手動授權，網頁無法自動擷取。
+
+### Quiet / Whisper 模式
+
+儀表板右上角的切換開關，點一下就切換，預設記在瀏覽器裡。
+
+| 模式 | 行為 
+| **Quiet**（預設） | 左上角只顯示主軸標題句，不會有回應；介面隱藏時跟著隱藏 
+| **Whisper** | 偵測到音樂時(條件式啟動)開始輪播台詞，音樂停下約 4 秒後淡出 
+
+Whisper 模式的台詞分兩種組別：
+
+- **問答**：左上的對話框先出現提問，10 秒後右側的對話框回應
+- **獨白**：畫面正中間直接顯示文字，沒有對話框
+
+播放規則：
+
+- 每次開始都先播主軸標題那一組
+- 之後每 3 組問答穿插 1 組獨白，各自隨機挑選，不會連續出現同一組
+- 「有音樂」以實際音量判斷，不只看有沒有選音源：音量超過門檻持續 1.5 秒才開始，低於門檻持續 4 秒才結束，歌曲間的短暫安靜不會打斷台詞
+
+#### 詞句管理
+
+ [`src/whispers.js`](src/whispers.js)，直接增減陣列即可：
+main: true代表主軸標題句。
+
+- 時間與頻率在 [`src/ui/whisper.js`](src/ui/whisper.js) 開頭調整：`STEP`（每句停留毫秒數）、`GAP`（組別間空檔）、`PAIRS_PER_CENTER`（幾組問答後接一組獨白）
+- 偵測音樂的門檻在 [`src/ui/controls.js`](src/ui/controls.js) 開頭：`MUSIC_ON`、`MUSIC_OFF`、`MUSIC_START_HOLD`、`MUSIC_STOP_HOLD`
+- 字體為手寫體「辰宇落雁體 2.0 Thin」（`public/fonts/`），大小在 `src/style.css` 的 `.bubble, #whisper-center` 調整
+
+### 儀表板
+
+- **音量條**：低音 / 中音 / 高音即時強度
+- **紅點**：收到聲音時保持亮著，遇到節拍閃到最亮
 
 ### 音樂對應的視覺效果
 
@@ -72,20 +110,30 @@ starry_sky/
 ├── index.html            # 入口頁面
 ├── package.json
 ├── vite.config.js
-├── public/               # 靜態資源（測試音檔、貼圖）
+├── .github/workflows/
+│   └── deploy.yml        # push 到 main 自動部署到 GitHub Pages
+├── public/               # 靜態資源（原樣複製到網站根目錄）
+│   ├── mooner.png        # 網站圖示與儀表板 Logo
+│   ├── fonts/            # 手寫字體
+│   └── Pics/             # README 截圖
 └── src/
     ├── main.js           # 程式進入點、後製光暈、鏡頭與動畫主迴圈
+    ├── whispers.js       # Whisper 模式的台詞（問答 / 獨白 / 主軸）
     ├── audio/
     │   ├── sources.js    # 音源擷取（分頁 / 系統 / 麥克風 / 檔案）
-    │   └── analyser.js   # 頻譜分析、頻段切分、節拍偵測
+    │   └── analyser.js   # 頻譜分析、頻段切分、節拍偵測、實際音量
     ├── scene/
     │   ├── stars.js      # 星空背景
     │   ├── nebula.js     # 星雲
     │   ├── galaxy.js     # 旋臂星系
+    │   ├── constellations.js # 真實星座
+    │   ├── aurora.js     # 極光音波
+    │   ├── soundwave.js  # 音波星座
     │   └── meteors.js    # 流星與節拍粒子
     ├── shaders/          # GLSL 著色器
     ├── ui/
-    │   └── controls.js   # 音源選擇介面、快捷鍵、拖放音檔
+    │   ├── controls.js   # 音源選擇、Quiet / Whisper 切換、音樂偵測、快捷鍵、拖放音檔
+    │   └── whisper.js    # 台詞輪播的時間與順序
     └── style.css
 ```
 
@@ -93,7 +141,7 @@ starry_sky/
 
 ## 使用方式
 
-1. 執行 `npm run dev`，瀏覽器會自動開啟頁面
+1. 執行 `npm run dev`，瀏覽器會自動開啟頁面 (開發用)
 2. 點選下方面板的音源：
    - **分頁音訊**：選擇正在播音樂的分頁，勾選「同時分享分頁音訊」
    - **系統音訊**：選擇「整個螢幕」，勾選「同時分享系統音訊」
@@ -107,7 +155,7 @@ starry_sky/
 | `F` | 全螢幕 |
 
 > 網址加上 `?demo`（例如 `http://localhost:5173/?demo`）可以用模擬的音樂數值預覽效果，不需要任何音源。
-> 備註:瀏覽器需使用硬體加速：到 Chrome / Edge 的「設定 → 系統」，確認「使用圖形加速」有打開。
+> 使用者備註:瀏覽器需使用硬體加速：到 Chrome / Edge 的「設定 → 系統」，確認「使用圖形加速」有打開。
 
 
 ---
