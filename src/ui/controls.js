@@ -110,14 +110,26 @@ export function setupControls(analyser) {
     else setStatus('請拖入音訊檔案（mp3、wav、flac…）。', true);
   });
 
-  // 有音源時，滑鼠靜止一段時間就隱藏介面
+  // 有音源或全螢幕時，滑鼠靜止一段時間就隱藏介面（控制面板與左上角文案）
   function wake() {
     body.classList.remove('idle');
     clearTimeout(idleTimer);
-    if (current) idleTimer = setTimeout(() => body.classList.add('idle'), IDLE_DELAY);
+    if (current || document.fullscreenElement) {
+      idleTimer = setTimeout(() => body.classList.add('idle'), IDLE_DELAY);
+    }
   }
   window.addEventListener('pointermove', wake);
   window.addEventListener('pointerdown', wake);
+
+  // 一進入全螢幕就立刻隱藏介面，移動滑鼠會暫時顯示
+  document.addEventListener('fullscreenchange', () => {
+    if (document.fullscreenElement) {
+      clearTimeout(idleTimer);
+      body.classList.add('idle');
+    } else {
+      wake();
+    }
+  });
 
   window.addEventListener('keydown', (e) => {
     if (e.repeat || e.target instanceof HTMLInputElement) return;

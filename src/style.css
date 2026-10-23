@@ -1,3 +1,19 @@
+/*
+ * 手寫字體：辰宇落雁體 2.0 Thin
+ * 把字體檔放到 public/fonts/，檔名改成 ChenYuluoyan-Thin.ttf（或 .otf / .woff2）。
+ * 如果電腦已經安裝這套字體，沒有放檔案也會直接使用系統裡的字體。
+ */
+@font-face {
+  font-family: 'ChenYuluoyan';
+  src:
+    local('辰宇落雁體 2.0 Thin'),
+    local('ChenYuluoyan-2.0-Thin'),
+    url('/fonts/ChenYuluoyan-Thin.woff2') format('woff2'),
+    url('/fonts/ChenYuluoyan-Thin.ttf') format('truetype'),
+    url('/fonts/ChenYuluoyan-Thin.otf') format('opentype');
+  font-display: swap;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -139,6 +155,40 @@ body.ui-off #panel {
   opacity: 0;
   pointer-events: none;
   transform: translateX(-50%) translateY(12px);
+}
+
+/* 左上角文案框 */
+#caption {
+  position: fixed;
+  top: 70px;
+  left: 70px;
+  max-width: calc(100% - 32px);
+  padding: 16px 26px;
+  border-radius: 16px;
+  background: rgba(8, 18, 52, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+  color: #e6ebffd3;
+  font-family: 'ChenYuluoyan', 'Microsoft JhengHei', sans-serif;
+  font-size: 40px;
+  line-height: 1.5;
+  letter-spacing: 0.08em;
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+body.idle #caption,
+body.ui-off #caption {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-12px);
+}
+
+@media (max-width: 480px) {
+  #caption {
+    top: 16px;
+    left: 16px;
+    font-size: 22px;
+  }
 }
 
 body.dragging #panel {
