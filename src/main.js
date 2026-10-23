@@ -156,7 +156,7 @@ function frame() {
   bloom.strength = 0.3 + a.bass * 0.15 + a.beat * 0.25;
 
   composer.render();
-  controls.updateMeter(a);
+  controls.update(a, dt);
   requestAnimationFrame(frame);
 }
 

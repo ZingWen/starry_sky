@@ -8,17 +8,26 @@
   <body>
     <canvas id="scene"></canvas>
 
-    <div id="caption">「我想回家，但我的家不在地球上。」</div>
+    <div id="whisper-left" class="bubble"></div>
+    <div id="whisper-right" class="bubble"></div>
+    <div id="whisper-center"></div>
 
     <div id="panel">
       <div class="panel-head">
-        <span class="title">STARRY SKY</span>
-        <div class="meter" aria-hidden="true">
-          <span class="bar" id="m-bass"></span>
-          <span class="bar" id="m-mid"></span>
-          <span class="bar" id="m-treble"></span>
-          <span id="beat-dot"></span>
+        <div class="head-left">
+          <span class="title">STARRY SKY</span>
+          <div class="meter" aria-hidden="true">
+            <span class="bar" id="m-bass"></span>
+            <span class="bar" id="m-mid"></span>
+            <span class="bar" id="m-treble"></span>
+            <span id="beat-dot"></span>
+          </div>
         </div>
+        <button id="mode-toggle" class="mode-toggle" role="switch" aria-checked="false" aria-label="Whisper 模式" data-tip="想安靜待著，或想聽我們說說話？">
+          <span class="thumb" aria-hidden="true"></span>
+          <span class="opt-quiet">Quiet</span>
+          <span class="opt-whisper">Whisper</span>
+        </button>
       </div>
 
       <div class="buttons">

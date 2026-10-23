@@ -1,6 +1,15 @@
 import { captureDisplayAudio, captureMicrophone, playAudioFile } from '../audio/sources.js';
+import { setupWhisper } from './whisper.js';
 
 const IDLE_DELAY = 3000;
+const MODE_KEY = 'starry-sky-mode';
+
+// 判斷「有音樂」的門檻（實際音量 0~1）：超過 ON 持續一段時間才算開始，
+// 低於 OFF 持續一段時間才算結束，歌曲間的短暫安靜不會讓台詞中斷
+const MUSIC_ON = 0.1;
+const MUSIC_OFF = 0.06;
+const MUSIC_START_HOLD = 1.5; // 秒
+const MUSIC_STOP_HOLD = 4; // 秒
 
 function describeError(err) {
   switch (err?.name) {
@@ -25,9 +34,54 @@ export function setupControls(analyser) {
   const stopBtn = document.querySelector('#stop-btn');
   const bars = ['#m-bass', '#m-mid', '#m-treble'].map((s) => document.querySelector(s));
   const beatDot = document.querySelector('#beat-dot');
+  const modeToggle = document.querySelector('#mode-toggle');
+  const whisper = setupWhisper();
 
   let current = null;
   let idleTimer = 0;
+  let mode = 'quiet';
+  let hasMusic = false;
+  let musicTimer = 0;
+  try {
+    if (localStorage.getItem(MODE_KEY) === 'whisper') mode = 'whisper';
+  } catch {}
+
+  // Whisper 模式、有音源而且真的聽得到音樂時才播放台詞；Quiet 模式只在左上顯示主軸那句
+  function syncWhisper() {
+    if (mode === 'whisper' && current && hasMusic) {
+      whisper.start();
+    } else {
+      whisper.stop();
+      whisper.caption(mode === 'quiet');
+    }
+  }
+
+  function detectMusic(loudness, dt) {
+    if (!current) return;
+    const heard = hasMusic ? loudness > MUSIC_OFF : loudness > MUSIC_ON;
+    if (heard === hasMusic) {
+      musicTimer = 0;
+      return;
+    }
+    musicTimer += dt;
+    if (musicTimer >= (hasMusic ? MUSIC_STOP_HOLD : MUSIC_START_HOLD)) {
+      hasMusic = heard;
+      musicTimer = 0;
+      syncWhisper();
+    }
+  }
+
+  function setMode(next) {
+    mode = next;
+    modeToggle.setAttribute('aria-checked', String(mode === 'whisper'));
+    try {
+      localStorage.setItem(MODE_KEY, mode);
+    } catch {}
+    syncWhisper();
+  }
+
+  modeToggle.addEventListener('click', () => setMode(mode === 'whisper' ? 'quiet' : 'whisper'));
+  setMode(mode);
 
   function setStatus(text, isError = false) {
     status.textContent = text;
@@ -44,7 +98,10 @@ export function setupControls(analyser) {
       current.stop();
       current = null;
     }
+    hasMusic = false;
+    musicTimer = 0;
     setActive(null);
+    syncWhisper();
     if (message) setStatus(message);
     wake();
   }
@@ -67,6 +124,7 @@ export function setupControls(analyser) {
         if (current === src) stop('音源已結束，請重新選擇。');
       });
       setActive(kind);
+      syncWhisper();
       setStatus(`正在聆聽：${src.label}`);
       wake();
     } catch (err) {
@@ -143,11 +201,18 @@ export function setupControls(analyser) {
   });
 
   return {
+    update(levels, dt) {
+      detectMusic(levels.loudness, dt);
+      this.updateMeter(levels);
+    },
+
     updateMeter(levels) {
       bars[0].style.transform = `scaleY(${0.05 + levels.bass * 0.95})`;
       bars[1].style.transform = `scaleY(${0.05 + levels.mid * 0.95})`;
       bars[2].style.transform = `scaleY(${0.05 + levels.treble * 0.95})`;
-      beatDot.style.opacity = 0.1 + levels.beat * 0.9;
+      // 有收到聲音時保持亮著，遇到節拍再閃到最亮
+      const receiving = current && levels.loudness > MUSIC_OFF;
+      beatDot.style.opacity = receiving ? 0.6 + levels.beat * 0.4 : 0.1 + levels.beat * 0.9;
     },
   };
 }

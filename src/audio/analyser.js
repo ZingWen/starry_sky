@@ -16,7 +16,8 @@ export class AudioAnalyser {
     this.source = null;
     this.freq = null;
 
-    this.levels = { bass: 0, mid: 0, treble: 0, volume: 0, beat: 0, beatTriggered: false };
+    // loudness 是沒經過自動增益的實際音量，用來判斷「現在到底有沒有聲音」
+    this.levels = { bass: 0, mid: 0, treble: 0, volume: 0, loudness: 0, beat: 0, beatTriggered: false };
     this.peaks = { bass: 0.2, mid: 0.2, treble: 0.2 };
     this.bassHistory = [];
     this.lastBeat = 0;
@@ -110,6 +111,8 @@ export class AudioAnalyser {
       L[k] += (target - L[k]) * (1 - Math.exp(-dt * rate));
     }
     L.volume = (L.bass + L.mid + L.treble) / 3;
+    const loud = (raw.bass + raw.mid + raw.treble) / 3;
+    L.loudness += (loud - L.loudness) * (1 - Math.exp(-dt * 3));
 
     this.bassHistory.push(raw.bass);
     if (this.bassHistory.length > HISTORY_SIZE) this.bassHistory.shift();

@@ -6,7 +6,7 @@ import fragmentShader from '../shaders/point.frag?raw';
 const STAR_COLORS = ['#9bb0ff', '#aabfff', '#cad7ff', '#f8f7ff', '#fff4ea', '#ffd2a1', '#ffcc6f'];
 
 export class Stars {
-  constructor({ count = 30000, minRadius = 300, maxRadius = 1200, pixelRatio = 1 } = {}) {
+  constructor({ count = 27000, minRadius = 300, maxRadius = 1200, pixelRatio = 1 } = {}) {
     const positions = new Float32Array(count * 3);
     const colors = new Float32Array(count * 3);
     const sizes = new Float32Array(count);

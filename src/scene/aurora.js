@@ -16,7 +16,7 @@ void main() {
  * 由左（低音）到右（高音），各頻段越響，那一段的簾幕就升得越高、越亮。
  */
 export class Aurora {
-  constructor({ bands = 32, distance = 100, coverage = 0.55 } = {}) {
+  constructor({ bands = 32, distance = 100, coverage = 0.506 } = {}) {
     this.bands = bands;
     this.distance = distance;
     this.coverage = coverage; // 佔畫面高度的比例

@@ -14,7 +14,7 @@ void main() {
   vec4 mv = modelViewMatrix * vec4(position, 1.0);
 
   // 每顆星有自己的閃爍節奏，高音時其中一部分星星會特別亮
-  float twinkle = 0.65 + 0.35 * sin(uTime * (0.8 + aPhase * 2.5) + aPhase * 40.0);
+  float twinkle = 0.05 + 0.35 * sin(uTime * (0.56 + aPhase * 1.75) + aPhase * 40.0);
   float sparkle = step(0.7, fract(aPhase * 13.7)) * uTreble * 1.2;
 
   vColor = aColor;
