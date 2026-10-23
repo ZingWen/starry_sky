@@ -7,6 +7,7 @@
 🌙 Git page已部署：**https://zingwen.github.io/starry_sky/**
 
 > 使用者備註:瀏覽器需使用硬體加速：到 Chrome / Edge 的「設定 → 系統」，確認「使用圖形加速」有打開。
+> 建議電腦使用。手機使用尚未進行優化，目前只優化手機介面顯示，手機功能可能無法正常使用。
 
 ![畫面截圖](<public/Pics/螢幕擷取畫面 2026-10-23 135526.png>)
 
@@ -195,3 +196,4 @@ npm run build
 1. **Wallpaper Engine 動態桌布**：Wallpaper Engine 支援網頁桌布，並提供系統音訊 API（`wallpaperRegisterAudioListener`），可以直接跟著電腦播放的任何聲音律動，不需手動授權。
 2. **Electron 桌面應用程式**：包成獨立程式，透過 WASAPI loopback 直接擷取系統音訊。
 3. **設定面板**：主題配色、粒子密度、靈敏度調整。
+4. **手機/平板**：開發需求未定。
