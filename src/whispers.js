@@ -21,6 +21,8 @@ export const WHISPERS = [
   { left: '「感受不到感覺了。」', right: '「沒關係。」' },
   { left: '「我覺得我跟人類格格不入。」', right: '「沒關係。做個可愛的外星人也挺好。」' },
   { left: '「我不想工作。」', right: '「咦...沒關係。」' },
+  { left: '「我要說壞話了。」', right: '「好。我在聽。」' },
+  { left: '「現在要幹嘛?」', right: '「不知道。都行吧?」' },
   { left: '「你聽得見星星的聲音嗎？」', right: '「聽得見。它們在跟著音樂呼吸。」' },
   { left: '「Does it matter if the stars aren’t that bright?」', right: '「The sky has room for all of them.」' },
   { left: '「What if I leave nothing behind?」', right: '「You don’t have to leave a mark \n to have been here.」' },
@@ -34,4 +36,6 @@ export const WHISPERS = [
   { center: '嘿，好好吃飯，好好睡覺。' },
   { center: '你不用做甚麼，就很好了。' },
   { center: '你僅僅是存在，就很美好。' },
+  { center: '你真的超棒的，我打從心底這麼覺得。' },
+  { center: '嚕嚕嚕嚕嚕嚕嚕(雜訊)。' },
 ];
