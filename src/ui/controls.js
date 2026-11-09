@@ -1,5 +1,6 @@
 import { captureDisplayAudio, captureMicrophone, playAudioFile } from '../audio/sources.js';
 import { setupWhisper } from './whisper.js';
+import { setupSurprise } from './surprise.js';
 
 const IDLE_DELAY = 3000;
 const MODE_KEY = 'starry-sky-mode';
@@ -46,13 +47,20 @@ export function setupControls(analyser) {
     if (localStorage.getItem(MODE_KEY) === 'whisper') mode = 'whisper';
   } catch {}
 
+  const surprise = setupSurprise({
+    getContext: () => analyser.ensureContext(),
+    canStart: () => mode === 'whisper' && hasMusic, // 只在 Whisper 模式且有音樂時才可能出現
+    onActiveChange: () => syncWhisper(),
+  });
+
   // Whisper 模式、有音源而且真的聽得到音樂時才播放台詞；Quiet 模式只在左上顯示主軸那句
+  // 每日驚喜進行中，兩種模式的台詞與主軸文案都先隱藏，結束後恢復
   function syncWhisper() {
-    if (mode === 'whisper' && current && hasMusic) {
+    if (mode === 'whisper' && current && hasMusic && !surprise.active) {
       whisper.start();
     } else {
       whisper.stop();
-      whisper.caption(mode === 'quiet');
+      whisper.caption(mode === 'quiet' && !surprise.active);
     }
   }
 
@@ -68,6 +76,7 @@ export function setupControls(analyser) {
       hasMusic = heard;
       musicTimer = 0;
       syncWhisper();
+      if (hasMusic) surprise.conditionsChanged();
     }
   }
 
@@ -78,6 +87,7 @@ export function setupControls(analyser) {
       localStorage.setItem(MODE_KEY, mode);
     } catch {}
     syncWhisper();
+    if (mode === 'whisper') surprise.conditionsChanged();
   }
 
   modeToggle.addEventListener('click', () => setMode(mode === 'whisper' ? 'quiet' : 'whisper'));
@@ -203,6 +213,7 @@ export function setupControls(analyser) {
   return {
     update(levels, dt) {
       detectMusic(levels.loudness, dt);
+      surprise.observe(!current || levels.loudness <= MUSIC_OFF, dt);
       this.updateMeter(levels);
     },
 

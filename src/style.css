@@ -308,6 +308,124 @@ body.ui-off #whisper-left.caption {
   transform: translateY(-12px);
 }
 
+/* 每日驚喜：無線電對話框，不蓋住下方的控制面板 */
+#radio {
+  position: fixed;
+  top: 40%;
+  left: 50%;
+  width: min(760px, calc(100% - 32px));
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.6s ease;
+}
+
+#radio.on {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#radio-line {
+  min-height: 96px;
+  max-width: 100%;
+  padding: 18px 32px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(8, 18, 52, 0.55);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+  color: #e6ebffd3;
+  font-family: 'ChenYuluoyan', 'Microsoft JhengHei', sans-serif;
+  font-size: clamp(22px, 3vw, 34px);
+  line-height: 1.5;
+  letter-spacing: 0.08em;
+  white-space: pre-line;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.45s ease; /* 要跟 surprise.js 的 FADE_MS 一致 */
+}
+
+#radio-line:disabled,
+#radio.speaking #radio-line,
+#radio.speaking #radio-choices button {
+  cursor: default;
+}
+
+/* 每句話結尾閃爍的游標 */
+#radio-line::after {
+  content: '_';
+  margin-left: 0.1em;
+  animation: radio-cursor 1s steps(1, end) infinite;
+}
+
+@keyframes radio-cursor {
+  50% {
+    opacity: 0;
+  }
+}
+
+#radio-line.show,
+#radio-choices.show {
+  opacity: 1;
+}
+
+#radio-choices {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+  opacity: 0;
+  transition: opacity 0.45s ease;
+}
+
+#radio-choices button,
+#radio-tools button {
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(10, 12, 30, 0.55);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  transition: background 0.2s, opacity 0.2s;
+}
+
+#radio-choices button {
+  min-width: 112px;
+  padding: 9px 22px;
+  font-family: 'ChenYuluoyan', 'Microsoft JhengHei', sans-serif;
+  font-size: 24px;
+  letter-spacing: 0.08em;
+}
+
+#radio-choices button:hover,
+#radio-tools button:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+#radio-tools {
+  position: fixed;
+  top: 20px;
+  right: 24px;
+  display: flex;
+  gap: 8px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.6s ease;
+}
+
+#radio-tools.on {
+  opacity: 0.65;
+  pointer-events: auto;
+}
+
+#radio-tools button {
+  padding: 6px 14px;
+  font-size: 13px;
+}
+
 @media (max-width: 480px) {
   .bubble,
   #whisper-center {

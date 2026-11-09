@@ -13,11 +13,11 @@
 
 ---
 
-## 功能規劃
+## 1. 功能規劃
 
 
 
-### 音源輸入
+### 1.1 音源輸入
 ![介面截圖](<public/Pics/螢幕擷取畫面 2026-10-23 135548.png>)
 
 | 音源 | 取得方式 | 備註 |
@@ -29,7 +29,7 @@
 
 > 瀏覽器基於安全限制，每次使用分頁或系統音訊都必須由使用者手動授權，網頁無法自動擷取。
 
-### Quiet / Whisper 模式切換
+### 1.2 Quiet / Whisper 模式切換
 
 儀表板右上角的切換開關，點一下就切換，預設記在瀏覽器裡。
 
@@ -49,7 +49,7 @@ Whisper 模式的台詞分兩種組別：
 - 之後每 3 組問答穿插 1 組獨白，各自隨機挑選，不會連續出現同一組
 - 「有音樂」以實際音量判斷，不只看有沒有選音源：音量超過門檻持續 1.5 秒才開始，低於門檻持續 4 秒才結束，歌曲間的短暫安靜不會打斷台詞
 
-#### 詞句管理
+#### 1.2.1 詞句管理
 
 所有台詞都在 [`src/whispers.js`](src/whispers.js)，直接增減陣列即可，`main: true` 代表主軸標題句。
 
@@ -57,12 +57,34 @@ Whisper 模式的台詞分兩種組別：
 - 偵測音樂的門檻在 [`src/ui/controls.js`](src/ui/controls.js) 開頭：`MUSIC_ON`、`MUSIC_OFF`、`MUSIC_START_HOLD`、`MUSIC_STOP_HOLD`
 - 字體為手寫體「辰宇落雁體 2.0 Thin」（`public/fonts/`），大小在 `src/style.css` 的 `.bubble, #whisper-center` 調整
 
-### 儀表板
+### 1.3 宇宙雜訊
+
+宇宙裡有個機器人管理了很多東東，他有時候會跟你接上頻率，試圖跟你說說話。
+僅限判斷 Whisper 模式及背景音樂存在時可能出現，每天最多一次。
+每日一次的雜訊劇情隨機，對話中的選擇也會帶來不同的回應，也可能錯過。
+
+規則：
+
+- 當天第一次進站時，隨機決定 3～15 分鐘後的出現時間，重新整理不會重新計算
+- 時間到時必須是 Whisper 模式、偵測到音樂，且頁面在前景；條件不符就先保留，當天符合時再出現
+- 提示出現的當下就記錄在瀏覽器的 `localStorage`，當天不再出現；不做輪詢
+- 劇情進行中會暫停其他原台詞，結束後自動恢復
+
+> 雜訊用 Web Audio 產生，對話朗讀使用瀏覽器語音（Web Speech API），也可以改用音檔。朗讀效果依瀏覽器和系統提供的語音而不同。
+
+#### 1.3.1 劇情管理
+
+一個劇情一個檔案，放進 [`src/stories/`](src/stories/) 就會自動加入隨機。寫法與模板見 [`src/stories/README.md`](src/stories/README.md)。
+
+- 時間與無聲判定在 [`src/ui/surprise.js`](src/ui/surprise.js) 開頭調整，語音設定在 [`src/stories/_settings.js`](src/stories/_settings.js)，雜訊音量在 [`src/audio/static.js`](src/audio/static.js)
+- 網址加上 `?surprise` 可以直接測試，重新整理後點一下畫面就會出現（指定劇情用 `?surprise=劇情id`），測試時不會記錄當天已出現
+
+### 1.4 儀表板
 
 - **音量條**：低音 / 中音 / 高音即時強度
 - **紅點**：收到聲音時保持亮著，遇到節拍閃到最亮
 
-### 音樂對應的視覺效果
+### 1.5 音樂對應的視覺效果
 
 | 音訊特徵 | 視覺效果 |
 |---|---|
@@ -72,7 +94,7 @@ Whisper 模式的台詞分兩種組別：
 | 節拍（Beat） | 光暈爆發、粒子噴發 |
 | 整體音量 | 粒子速度與擴散範圍 |
 
-### 視覺元素
+### 1.6 視覺元素
 
 - **星空背景**：數萬顆不同大小、亮度和顏色的星點，底色為藍黑色
 - **星座**：獵戶座、北斗七星、仙后座、天蠍座、天鵝座、獅子座、天琴座、南十字座，依真實星圖連線，每一拍輪流點亮一個，以淡淡的方式顯示（`SHOW_CONSTELLATIONS` 開關）
@@ -86,7 +108,7 @@ Whisper 模式的台詞分兩種組別：
 
 ---
 
-## 技術棧
+## 2. 技術棧
 
 | 類別 | 技術 | 用途 |
 |---|---|---|
@@ -97,16 +119,17 @@ Whisper 模式的台詞分兩種組別：
 | 後製特效 | Three.js `EffectComposer` + `UnrealBloomPass` | 光暈、發光效果 |
 | 音訊分析 | Web Audio API（`AudioContext`、`AnalyserNode`） | FFT 頻譜分析、音量與節拍偵測 |
 | 音源擷取 | Media Capture API（`getDisplayMedia`、`getUserMedia`） | 取得分頁、系統或麥克風音訊 |
+| 語音朗讀 | Web Speech API（`speechSynthesis`） | 每日驚喜的對話朗讀 |
 | UI | 原生 HTML / CSS | 音源選擇按鈕等少量介面 |
 
-### Three.js
+### 2.1 Three.js
 本專案的畫面主要是一個全螢幕 canvas 加上少量按鈕，用不到 React 的元件管理優勢。動畫透過 `requestAnimationFrame` 直接更新，也比較好控制效能。
 
 未來如果需要大量設定面板（顏色、粒子數、主題切換等），可以再引入 React 搭配 [react-three-fiber](https://docs.pmnd.rs/react-three-fiber)。
 
 ---
 
-## 專案結構
+## 3. 專案結構
 
 ```
 starry_sky/
@@ -122,9 +145,16 @@ starry_sky/
 └── src/
     ├── main.js           # 程式進入點、後製光暈、鏡頭與動畫主迴圈
     ├── whispers.js       # Whisper 模式的台詞（問答 / 獨白 / 主軸）
+    ├── stories/          # 每日驚喜的劇情，一個檔案一個劇情，自動載入
+    │   ├── README.md     # 劇情寫法說明
+    │   ├── _template.js  # 新劇情模板
+    │   ├── _settings.js  # 語音、語速、音高
+    │   ├── _dsl.js       # say / ask / option 與劇情檢查
+    │   └── index.js      # 自動載入資料夾內的劇情
     ├── audio/
     │   ├── sources.js    # 音源擷取（分頁 / 系統 / 麥克風 / 檔案）
-    │   └── analyser.js   # 頻譜分析、頻段切分、節拍偵測、實際音量
+    │   ├── analyser.js   # 頻譜分析、頻段切分、節拍偵測、實際音量
+    │   └── static.js     # 程式產生的無線電雜訊
     ├── scene/
     │   ├── stars.js      # 星空背景
     │   ├── nebula.js     # 星雲
@@ -136,13 +166,14 @@ starry_sky/
     ├── shaders/          # GLSL 著色器
     ├── ui/
     │   ├── controls.js   # 音源選擇、Quiet / Whisper 切換、音樂偵測、快捷鍵、拖放音檔
-    │   └── whisper.js    # 台詞輪播的時間與順序
+    │   ├── whisper.js    # 台詞輪播的時間與順序
+    │   └── surprise.js   # 每日驚喜的觸發、對話流程與朗讀
     └── style.css
 ```
 
 ---
 
-## 使用方式
+## 4. 使用方式
 
 1. 執行 `npm run dev`，瀏覽器會自動開啟頁面 (開發用)
 2. 點選下方面板的音源：
@@ -163,7 +194,7 @@ starry_sky/
 
 ---
 
-## 開發方式
+## 5. 開發方式
 
 ```bash
 # 安裝相依套件
@@ -180,7 +211,7 @@ npm run build
 
 ---
 
-## 瀏覽器支援
+## 6. 瀏覽器支援
 
 | 瀏覽器 | 分頁音訊 | 系統音訊 | 麥克風 |
 |---|---|---|---|
@@ -191,7 +222,7 @@ npm run build
 
 ---
 
-## 未來發展
+## 7. 未來發展
 
 1. **Wallpaper Engine 動態桌布**：Wallpaper Engine 支援網頁桌布，並提供系統音訊 API（`wallpaperRegisterAudioListener`），可以直接跟著電腦播放的任何聲音律動，不需手動授權。
 2. **Electron 桌面應用程式**：包成獨立程式，透過 WASAPI loopback 直接擷取系統音訊。
