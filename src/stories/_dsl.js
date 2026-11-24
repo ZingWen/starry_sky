@@ -7,6 +7,16 @@ export function say(text, speak, voice) {
   return { type: 'say', text, speak, voice };
 }
 
+/** 一句聽不懂的雜訊：只顯示文字、不朗讀，顯示期間持續播放無線電雜訊聲 */
+export function noise(text) {
+  return { type: 'say', text, speak: '', noise: true };
+}
+
+/** 直接結束對話，通常放在「關閉」這類選項裡 */
+export function end() {
+  return { type: 'end' };
+}
+
 /** 選項，必須緊接在一句 say 後面，選項會跟那句話一起出現；選完自動接回下一步 */
 export function ask(...options) {
   return { type: 'ask', options };
@@ -35,6 +45,8 @@ function checkSteps(steps, where, errors) {
       if (!step.text) errors.push(`${at}：say 沒有文字`);
     } else if (step?.type === 'waitForSilence') {
       if (step.line?.type !== 'say') errors.push(`${at}：waitForSilence 裡要放一句 say`);
+    } else if (step?.type === 'end') {
+      if (i !== steps.length - 1) errors.push(`${at}：end 後面的台詞不會播到`);
     } else if (step?.type === 'ask') {
       if (steps[i - 1]?.type !== 'say') errors.push(`${at}：ask 前面必須緊接一句 say`);
       if (!step.options.length || step.options.length > MAX_OPTIONS) {
@@ -45,7 +57,7 @@ function checkSteps(steps, where, errors) {
         else checkSteps(o.steps, `${at}「${o.label}」`, errors);
       });
     } else {
-      errors.push(`${at}：不認得的步驟，請用 say、ask 或 waitForSilence`);
+      errors.push(`${at}：不認得的步驟，請用 say、noise、ask、end 或 waitForSilence`);
     }
   });
 }

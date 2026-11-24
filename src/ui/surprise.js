@@ -85,6 +85,7 @@ export function setupSurprise({ getContext, canStart, onActiveChange }) {
         fireAt: Math.min(Date.now() + wait, endOfDay),
         shown: false,
         lastId: state?.lastId ?? null,
+        heard: heardOf(state),
       };
       write(state);
     }
@@ -92,9 +93,18 @@ export function setupSurprise({ getContext, canStart, onActiveChange }) {
     timer = setTimeout(fire, Math.max(state.fireAt - Date.now(), MIN_DELAY));
   }
 
-  function pickScript(lastId) {
-    const others = SURPRISES.filter((s) => s.id !== lastId);
-    const list = others.length ? others : SURPRISES;
+  /** 聽過的劇情 id；舊版紀錄只有 lastId，就當作只聽過那一個 */
+  function heardOf(state) {
+    if (Array.isArray(state?.heard)) return state.heard;
+    return state?.lastId ? [state.lastId] : [];
+  }
+
+  /** 還有沒聽過的就先從裡面挑；全部聽過一輪後才隨機，但不跟上一次的一樣 */
+  function pickScript(state) {
+    const heard = heardOf(state);
+    const unheard = SURPRISES.filter((s) => !heard.includes(s.id));
+    const others = SURPRISES.filter((s) => s.id !== state?.lastId);
+    const list = unheard.length ? unheard : others.length ? others : SURPRISES;
     return list[Math.floor(Math.random() * list.length)];
   }
 
@@ -108,9 +118,9 @@ export function setupSurprise({ getContext, canStart, onActiveChange }) {
     }
     if (state.shown) return;
 
-    const picked = pickScript(state.lastId);
+    const picked = pickScript(state);
     if (!picked) return;
-    write({ ...state, shown: true, lastId: picked.id });
+    write({ ...state, shown: true });
     begin(picked);
   }
 
@@ -134,12 +144,20 @@ export function setupSurprise({ getContext, canStart, onActiveChange }) {
 
   function listen() {
     clearTimeout(noticeTimer);
-    staticSound?.stop();
-    staticSound = null;
-    inDialogue = true;
+    markHeard(script.id);
+    inDialogue = true; // 雜訊聲交給 showLine：第一句是雜訊就繼續響，否則停掉
     tools.classList.add('on');
     stack = [{ steps: script.script, index: 0 }];
     runStep();
+  }
+
+  /** 選了「嘗試聽見」才算聽過；充耳不聞的劇情之後還會再出現 */
+  function markHeard(id) {
+    if (testMode) return;
+    const state = read();
+    if (!state) return;
+    const heard = heardOf(state);
+    write({ ...state, lastId: id, heard: heard.includes(id) ? heard : [...heard, id] });
   }
 
   function finish(staticFade) {
@@ -191,6 +209,12 @@ export function setupSurprise({ getContext, canStart, onActiveChange }) {
   }
 
   function showLine(line, options) {
+    if (line.noise) {
+      staticSound ??= startStatic(getContext());
+    } else {
+      staticSound?.stop();
+      staticSound = null;
+    }
     render(line.text, options, () => playVoice(line));
   }
 
@@ -212,6 +236,8 @@ export function setupSurprise({ getContext, canStart, onActiveChange }) {
         waiting = true;
         showLine(step.line, { clickable: false });
       }
+    } else if (step.type === 'end') {
+      finish();
     } else {
       goNext(); // 沒有接在 say 後面的 ask：開發時會有檢查訊息，這裡略過避免卡住
     }
@@ -343,7 +369,7 @@ export function setupSurprise({ getContext, canStart, onActiveChange }) {
       'pointerdown',
       () => {
         const id = params.get('surprise');
-        const picked = SURPRISES.find((s) => s.id === id) ?? pickScript(null);
+        const picked = SURPRISES.find((s) => s.id === id) ?? pickScript(read());
         if (picked) begin(picked);
       },
       { once: true },

@@ -1,6 +1,6 @@
 // 用程式產生的無線電雜訊：白噪音 + 忽大忽小的音量 + 隨機爆裂聲
 
-const VOLUME = 0.17; // 雜訊音量，0~1
+const VOLUME = 0.1; // 雜訊音量，0~1
 const LOOP_SECONDS = 4;
 const FADE_IN = 1.2; // 秒
 
