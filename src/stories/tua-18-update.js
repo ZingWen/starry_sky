@@ -37,6 +37,6 @@ export default {
       '在你需要更新的時候，\n你也願意讓誰剛好能待著嗎？',
       'When you need an update of your own,\nwould you let someone just happen to be there, too？',
     ),
-    say('下次見。', 'See you next time.'),
+    say('總之，下次見。', 'Anyway, see you next time.'),
   ],
 };
